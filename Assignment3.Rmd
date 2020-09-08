@@ -1,0 +1,105 @@
+---
+title: "Assignment 3"
+author: "Gina Catellier"
+date: "9/2/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Problems
+-------
+
+1. Use `read.csv` to import the Covid19 data from WHO: [link](https://covid19.who.int/WHO-COVID-19-global-data.csv)
+
+```{r}
+df <- read.csv('https://covid19.who.int/WHO-COVID-19-global-data.csv')
+```
+
+2. How many columns and rows does the data have? How many categorical variables does the data have?
+
+```{r}
+dim(df)
+table(sapply(df, class))
+```
+
+
+3. How many missing values are there?  Show the missing values by columns.  What variable has the most number of missing values?
+
+```{r}
+sum(is.na(df))
+colSums(is.na(df))
+which.max(colSums(is.na(df)))
+
+```
+
+
+4. Correct the types of the variables that are mismatched type.
+
+```{r}
+str(df)
+ # install.packages('lubridate')
+library(lubridate)
+df$ï..Date_reported <- ymd(df$ï..Date_reported)
+class(df$ï..Date_reported)
+
+```
+
+
+5. Find the daily average number of cases globally.
+
+```{r}
+mean(df$New_cases)
+```
+
+
+6. Find the maximum cases a day.  
+
+```{r}
+max(df$New_cases)
+```
+
+
+7. Which country at which date has the maximum number of cases a day? *Hint:  use the `which.max` function to find the index of the row that contains the maximum number of cases. Then from the row index, find that country and the date. * 
+
+```{r}
+r = which.max(df$New_cases)
+df$Country[r]
+df$ï..Date_reported[r]
+```
+
+
+8.  How many WHO's region there are in the data?
+
+```{r}
+dim(table(df$WHO_region))
+```
+
+9.  Find the daily average cases in EUROPE. Find the daily average cases by regions.
+
+```{r}
+dfEurope <- df[df$WHO_region=='EURO',]
+mean(dfEurope$New_cases)
+```
+
+
+10. Find the daily average number of cases in the US in the last 5 days. 
+
+```{r}
+df2 = df[ (df$Country=='United States of America') & (Sys.Date()- df$ï..Date_reported<5),]
+mean(df2$New_cases)
+```
+
+
+11. Which day of the week has the most number of cases in South East Asia (SEARO region)?
+
+```{r}
+df3 <- df[df$WHO_region=='SEARO',]
+df3$dayofweek <- wday(df3$ï..Date_reported)
+table(df3$dayofweek)
+w = which.max(table(df3$dayofweek))
+df3$dayofweek[w]
+wday(df3$dayofweek[w], label=TRUE)
+```
+
