@@ -1,0 +1,99 @@
+---
+title: "Assignment 5"
+author: "Gina Catellier"
+date: "9/16/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+-------
+
+**The data:** 
+
+*The sinking of the Titanic is one of the most infamous shipwrecks in history.  On April 15, 1912, during her maiden voyage, the widely considered “unsinkable” RMS Titanic sank after colliding with an iceberg. Unfortunately, there weren’t enough lifeboats for everyone onboard, resulting in the death of 1502 out of 2224 passengers and crew.  While there was some element of luck involved in surviving, it seems some groups of people were more likely to survive than others.*
+
+-------
+
+**Questions**
+
+1. Use read_csv to import the titanic data. 
+
+```{r}
+installed.packages('tidyverse')
+library(tidyverse)
+df <- read_csv('titanic.csv')
+```
+
+-------
+
+2. How many missing values in total?  Which columns have the most number of missing values?
+
+```{r}
+sum(is.na(df))
+colSums(is.na(df))
+```
+
+-------
+
+3. Remove the column with the most number of missing value
+
+```{r}
+df$Cabin <- NULL
+```
+
+-------
+
+4.  Remove rows containing missing values and save it as a new dataset. The original dataset remains unchanged by this action.
+
+```{r}
+df2 <- drop_na(df)
+```
+
+-------
+
+5.  Replace the missing values of numeric variables with the corresponding average of the columns.
+
+```{r}
+df$Age <- replace_na(df$Age, mean(df$Age, na.rm = TRUE))
+```
+
+-------
+
+6.  Replace the missing values of catagorical variables with the corresponding mode (most frequent value) of the columns.
+
+```{r}
+df$Embarked <- replace_na(df$Embarked, mode(df$Embarked))
+```
+
+-------
+
+7.  The `Survived` column records whether a passenger is survived or not. `Survived = 1` means the passenger survived. Thus, the chance of survived for a random passenger can be estimated by
+
+```{r, eval=FALSE}
+mean(df$Survived)
+```
+
+Compare the chance of survived between male and female.  *Hint (Use group_by + summarise combo)*
+
+```{r}
+df %>% group_by(Sex) %>% summarize(survival_average = mean(Survived))
+```
+
+-------
+
+8.  Use the `summary` function to find the first quartile (Q1) and the thrid quartile(Q3) of variable `Age`. Create a new variable taking values of `young` (Age < Q1), `middle` (Age from Q1 to Q3), and `old`(Age > Q3). Compare the chance of survived between these three groups of age. 
+
+```{r}
+summary(df$Age)
+df$Age2 <- case_when(
+          df$Age < 22 ~ 'young',
+          df$Age < 35 ~ 'middle',
+          TRUE ~ 'old')
+df %>% group_by(Age2) %>% summarize(survival_average = mean(Survived))
+```
+
+
+
