@@ -31,17 +31,23 @@ df <- read_csv('titanic.csv')
 df %>% ggplot() + geom_density(mapping = aes(x=Age))
 ```
 
+This graph shows that a majority of the passengers on the titanic were around 25 years old, as this spot has the highest density of around 0.03.
+
 - Histogram 
 
 ```{r}
 df %>% ggplot() + geom_histogram(mapping = aes(x=Age))
 ```
 
+This graph shows that the most common ages of passengers on the titanic were around 18 to 25 years old, as these bars have the highest count in the histogram.
+
 - Boxplot
 
 ```{r}
 df %>% ggplot() + geom_boxplot(mapping = aes(x=Age))
 ```
+
+This graph shows the middle 50% of passengers on the titanic were between 20 and 38 years old. There are also passengers that were outliers, with ages over 65.
 
 -------
 
@@ -53,6 +59,8 @@ df %>% ggplot() + geom_boxplot(mapping = aes(x=Age))
 df %>% ggplot() + geom_bar(mapping = aes(x=Survived))
 ```
 
+This graph shows that the count of passengers that did not survive exceeds the count of passengers that did survive.
+
 -------
 
 3. For one two continuous variables
@@ -63,17 +71,23 @@ df %>% ggplot() + geom_bar(mapping = aes(x=Survived))
 df %>% ggplot() + geom_point(mapping = aes(x=Age, y=Fare))
 ```
 
+This graph shows that there is seemingly no correlation between the age of a passenger and the price that they paid on the ticket fare.
+
 - Line Plot
 
 ```{r}
 df %>% ggplot() + geom_line(mapping = aes(x=Age, y=Fare))
 ```
 
+This graph shows that there is little correlation between the age of a passenger on the titanic and the price that they paid for the ticket fare. However, there does seem to be a spike around the age of the late 30s.
+
 - Smooth Plot
 
 ```{r}
 df %>% ggplot() + geom_smooth(mapping = aes(x=Age, y=Fare))
 ```
+
+This graph shows that the lowest fare price for titanic passengers was for ages around 25 and the highest was for ages around 55.
 
 -------
 
@@ -85,11 +99,15 @@ df %>% ggplot() + geom_smooth(mapping = aes(x=Age, y=Fare))
 df %>% ggplot() + geom_density(mapping = aes(x=Age, color = Sex))
 ```
 
+This graph shows that the majority of passengers on the titanic were around 25 years old, for both men and women.
+
 - BoxPlot
 
 ```{r}
 df %>% ggplot() + geom_boxplot(mapping = aes(x=Age, fill = Sex))
 ```
+
+This graph shows that, although similar, the average age for a male passenger on the titanic is slightly higher than that for a female passenger.
 
 -------
 
@@ -98,6 +116,4 @@ df %>% ggplot() + geom_boxplot(mapping = aes(x=Age, fill = Sex))
 df %>% ggplot() + geom_bar(mapping = aes(x=Survived, fill=Sex))
 ```
 
-
-
-
+This graph shows that of the larger amount of passengers that did not survive the titanic, a majority of them were male. On the other hand, of the smaller portion of passengers that did survive most of them were female.
