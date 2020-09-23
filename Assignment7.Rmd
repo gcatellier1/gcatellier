@@ -1,0 +1,79 @@
+---
+title: "Assignment 7"
+author: "Gina Catellier"
+date: "9/23/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+-------
+
+**Questions**
+
+Use the data of your own.  Produce the following types of plots and comment on each plot. Plots should be meaningful. If you use the data we used in class, make sure the plots are not the same as the ones in the slides. All plots should have title, caption, appropriate labels on x and y-axis. 
+
+```{r}
+installed.packages('tidyverse')
+library(tidyverse)
+df <- read_csv('titanic.csv')
+installed.packages('ggthemes')
+library(ggthemes)
+```
+
+-------
+
+1. Make a plot use `facet_wrap` by one categorical variable (`facet_wrap(~variable1)`)
+
+```{r}
+df %>% ggplot(mapping=aes(x=Age, y=Fare, color=Sex))+ geom_point()+ facet_wrap(~Sex) + labs(title='Age vs Fare for Titanic Passengers Grouped by Sex', caption = 'It seems as though there were only male passengers over the age of 65. There is no apparent correlation between fare and age.')
+```
+
+2. Make a plot use `facet_wrap` by two categorical variables (`facet_wrap(variable1~variable2)`)
+
+```{r}
+df %>% ggplot(mapping=aes(x=Age, y=Fare, color=Sex))+ geom_point()+ facet_wrap(~Survived~Sex) + labs(title='Age vs Fare for Passengers on the Titantic Grouped by Sex and Survival', caption = 'This shows that a lot more females survived than males and it seems as though the females that survived had to pay higher fares than the males that survived.' )
+```
+
+3. Make a plot use `position ='jitter'`. 
+
+```{r}
+df %>% ggplot() + geom_point(mapping=aes(x=Age, y=Fare), position='jitter') + labs(title = 'Age vs Fare for Titanic Passengers', caption = 'It seems as though a majority of passengers were around the ages of 20 to 40, but there is no apparent correlation between age and the fare that was paid.')
+```
+
+4. Make a plot use `position ='dodge'`.
+
+```{r}
+df %>% ggplot() + geom_bar(mapping=aes(x=Survived, fill=Sex), position='dodge') + labs(title='Survival of Titanic Passengers based on Sex', caption='This graph shows that most passengers that did not survive were male and most passengers that did survive were female.')
+```
+
+5. Make a plot use `position ='fill'`. 
+
+```{r}
+df %>% ggplot() + geom_bar(mapping=aes(x=Survived, fill=Sex), position='fill') + labs(title='Survival of Titanic Passengers based on Sex', caption = 'This graph gives a closer look at the data, showing that over 80% of passengers that did not survive were male whereas only about 30% of passengers that did survive were male.')
+```
+
+6. Make a plot use `geom_col`.
+
+```{r}
+df %>% group_by(SibSp) %>% summarise(mean=mean(Survived)) %>% ggplot()+ geom_col(mapping=aes(x=SibSp, y=mean)) + labs(title='Survival Rate of Titanic Passengers based on Amount of Family Members', caption='This shows that passengers traveling with 1 or 2 relatives had the highest chance of survival.')
+```
+
+7. Change the theme of one of your plots. 
+
+```{r}
+df %>% group_by(SibSp) %>% summarise(mean=mean(Survived)) %>% ggplot()+ geom_col(mapping=aes(x=SibSp, y=mean)) + labs(title='Survival Rate of Titanic Passengers based on Amount of Family Members', caption='This shows that passengers traveling with 1 or 2 relatives had the highest chance of survival.') + theme_linedraw()
+```
+
+8. Save a plot and put a link of the plot to your Github Webpage.  To link a plot `abc.png` you just need to insert the following on the README.md
+
+```{r, eval=FALSE}
+[Link to the plot](abc.png)
+```
+
+
+
+
+
