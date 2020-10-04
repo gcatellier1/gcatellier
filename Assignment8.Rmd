@@ -1,0 +1,96 @@
+---
+title: "Assignment 8"
+author: "Gina Catellier"
+date: "9/28/2020"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+-------
+
+**Questions**
+
+Use the data of your own.  Produce the following types of plots and comment on each plot. Plots should be meaningful. If you use the data we used in class, make sure the plots are not the same as the ones in the slides. All plots should have title, caption, appropriate labels on x and y-axis. 
+
+-------
+
+1. Use the WHO's dataset at [this link](https://covid19.who.int/WHO-COVID-19-global-data.csv). Make a top-10 bar race by months between countries on the number of deaths by Covid 19.
+
+```{r}
+library(tidyverse)
+library(ggthemes)
+library(gganimate)
+df <- read_csv('https://covid19.who.int/WHO-COVID-19-global-data.csv')
+```
+
+```{r}
+library(lubridate)
+df$Month = month(df$Date_reported)
+d1 <- df %>% group_by(Month, Country) %>% summarise(mean = mean(New_deaths))
+d2 <- d1 %>% group_by(Month) %>% mutate(rank=rank(-mean)) %>% ungroup()
+d3 <- d2 %>% filter(rank <= 10)
+```
+
+```{r}
+library(gifski)
+a1 <- d3 %>% ggplot(aes(x=rank, y=mean, group=Country, fill=Country, label=Country)) + geom_col()+
+    geom_text(aes(y = mean, label = Country), hjust = 1.4) + coord_flip(clip = "off", expand = FALSE)     +scale_x_reverse()+
+    labs(title = 'Month {closest_state}', x='', y='Number of New Deaths', fill='')+
+    theme(plot.title = element_text(hjust = 1, size = 22),
+          axis.ticks.y = element_blank(),
+          axis.text.y  = element_blank(),
+          legend.position = "none") + 
+    transition_states(Month)+
+    ease_aes("cubic-in-out")
+
+animate(a1, nframes = 200, fps = 10)
+```
+
+2. Make another bar race using that dataset.  
+
+```{r}
+b1 <- df %>% group_by(Month, WHO_region) %>% summarise(mean = mean(New_cases))
+b2 <- b1 %>% group_by(Month) %>% mutate(rank=rank(-mean)) %>% ungroup()
+b3 <- b2 %>% filter(rank <= 10)
+```
+
+```{r}
+a2 <- b3 %>% ggplot(aes(x=rank, y=mean, group=WHO_region, fill=WHO_region, label=WHO_region)) + geom_col()+
+    geom_text(aes(y = mean, label = WHO_region), hjust = 1.4) + coord_flip(clip = "off", expand = FALSE)     +scale_x_reverse()+
+    labs(title = 'Month {closest_state}', x='', y='Number of New Cases', fill='')+
+    theme(plot.title = element_text(hjust = 1, size = 22),
+          axis.ticks.y = element_blank(),
+          axis.text.y  = element_blank()) + 
+    transition_states(Month)+
+    ease_aes("cubic-in-out")
+
+animate(a2, nframes = 200, fps = 10)
+```
+
+
+3. Make a bar race using a dataset of your own interest. 
+```{r}
+spotify = read_csv('top10s.csv')
+c1 <- spotify %>% group_by(year, artist) %>% summarise(mean = mean(pop))
+c2 <- c1 %>% group_by(year) %>% mutate(rank=rank(-mean)) %>% ungroup()
+c3 <- c2 %>% filter(rank <= 10)
+```
+```{r}
+a3 <- c3 %>% ggplot(aes(x=rank, y=mean, group=artist, fill=artist, label=artist)) + geom_col()+
+    geom_text(aes(y = mean, label = artist), hjust = 1.4) + coord_flip(clip = "off", expand = FALSE)     +scale_x_reverse()+
+    labs(title = 'Year {closest_state}', x='', y='Popularity of Top 10 Artists', fill='')+
+    theme(plot.title = element_text(hjust = 1, size = 22),
+          axis.ticks.y = element_blank(),
+          axis.text.y  = element_blank(),
+          legend.position = "none") + 
+    transition_states(year)+
+    ease_aes("cubic-in-out")
+
+animate(a3, nframes = 200, fps = 10)
+```
+
+
