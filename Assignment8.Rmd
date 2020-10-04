@@ -39,7 +39,7 @@ d3 <- d2 %>% filter(rank <= 10)
 library(gifski)
 a1 <- d3 %>% ggplot(aes(x=rank, y=mean, group=Country, fill=Country, label=Country)) + geom_col()+
     geom_text(aes(y = mean, label = Country), hjust = 1.4) + coord_flip(clip = "off", expand = FALSE)     +scale_x_reverse()+
-    labs(title = 'Month {closest_state}', x='', y='Number of New Deaths', fill='')+
+    labs(title = 'Month {closest_state}', x='', y='Number of New Deaths', fill='', caption = 'This graph shows the number of new deaths per country for each month.')+
     theme(plot.title = element_text(hjust = 1, size = 22),
           axis.ticks.y = element_blank(),
           axis.text.y  = element_blank(),
@@ -61,7 +61,7 @@ b3 <- b2 %>% filter(rank <= 10)
 ```{r}
 a2 <- b3 %>% ggplot(aes(x=rank, y=mean, group=WHO_region, fill=WHO_region, label=WHO_region)) + geom_col()+
     geom_text(aes(y = mean, label = WHO_region), hjust = 1.4) + coord_flip(clip = "off", expand = FALSE)     +scale_x_reverse()+
-    labs(title = 'Month {closest_state}', x='', y='Number of New Cases', fill='')+
+    labs(title = 'Month {closest_state}', x='', y='Number of New Cases', fill='', caption = 'This graph shows the number of new cases per region for each month.')+
     theme(plot.title = element_text(hjust = 1, size = 22),
           axis.ticks.y = element_blank(),
           axis.text.y  = element_blank()) + 
@@ -82,7 +82,7 @@ c3 <- c2 %>% filter(rank <= 10)
 ```{r}
 a3 <- c3 %>% ggplot(aes(x=rank, y=mean, group=artist, fill=artist, label=artist)) + geom_col()+
     geom_text(aes(y = mean, label = artist), hjust = 1.4) + coord_flip(clip = "off", expand = FALSE)     +scale_x_reverse()+
-    labs(title = 'Year {closest_state}', x='', y='Popularity of Top 10 Artists', fill='')+
+    labs(title = 'Year {closest_state}', x='', y='Popularity of Top 10 Artists', fill='', caption ='This graph shows the top 10 most popular artists per year.')+
     theme(plot.title = element_text(hjust = 1, size = 22),
           axis.ticks.y = element_blank(),
           axis.text.y  = element_blank(),
