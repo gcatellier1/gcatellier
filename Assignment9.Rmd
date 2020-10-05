@@ -1,0 +1,99 @@
+---
+title: "Assignment 9"
+author: "Gina Catellier"
+date: "10/5/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+
+-------
+
+1. Use the dataset by of covid 19 by WHO at https://covid19.who.int/WHO-COVID-19-global-data.csv. Find the three countries with the most numbers of deaths by Covid-19. 
+
+Hint: 
+
+-  Use `filter` to select the most current date 
+
+-  Pipe with `arrange(-Cumulative_deaths)` to rank the data by the number of cumulative deaths
+
+```{r}
+library(tidyverse)
+library(ggplot2)
+library(gganimate)
+library(gifski)
+df <- read_csv('https://covid19.who.int/WHO-COVID-19-global-data.csv')
+```
+
+```{r}
+library(lubridate)
+d1 <- df %>% filter(Date_reported == max(Date_reported))
+d2 <- d1 %>% mutate(rank = rank(-Cumulative_deaths)) %>% ungroup()
+d3 <- d2 %>% filter(rank <= 3)
+```
+
+```{r}
+d3$Country
+```
+
+2. Make a plot revealing the number of deaths in the three countries with the most numbers of deaths
+
+```{r}
+df %>% 
+  filter(Country %in% d3$Country) %>%
+  group_by(Country) %>%
+  ggplot(aes(y=Cumulative_deaths,
+            x=Date_reported,
+            color=Country,
+            fill=Country))+ 
+  labs(title = 'Cumulative Deaths over Time', caption
+            = 'This graph shows the number of deaths 
+            in the top 3 countries.', ylabel = 
+              'Number of Deaths', xlabel = 'Date 
+            Reported')+
+  geom_point(size=3)+
+  geom_text(aes(label = Cumulative_deaths), 
+            hjust = -.1, size=3)+
+  geom_line()+
+  transition_reveal(Date_reported)
+```
+
+
+3. Create the new variable (column) `death_per_cases` recording the number of deaths per cases (Hint: divide cumulative deaths by cumulative cases).  What are the three countries with the highest deaths per cases? 
+
+```{r}
+df$deaths_per_cases = df$Cumulative_deaths/df$Cumulative_cases
+a1 <- df %>% filter(Date_reported == max(Date_reported))
+a2 <- a1 %>% mutate(rank = rank(-deaths_per_cases)) %>% ungroup()
+a3 <- a2 %>% filter(rank <= 3)
+```
+
+```{r}
+a3$Country
+```
+
+4. Make a plot revealing the number of deaths per cases of the US, Italy and Mexico. 
+
+```{r}
+df %>% 
+  filter(Country %in% c('United States of America', 'Italy', 'Mexico'))%>%
+  group_by(Country) %>%
+  ggplot(aes(y=deaths_per_cases,
+            x=Date_reported,
+            color=Country,
+            fill=Country))+ 
+  labs(title = 'Cumulative Deaths per Cases over 
+       Time', caption = 'This graph shows the number 
+       of deaths per cases in the top 3 countries.', 
+       ylabel = 'Number of Deaths per Case', xlabel         ='Date Reported')+
+  geom_point(size=3)+
+  geom_text(aes(label = deaths_per_cases), 
+            hjust = -.1, size=3)+
+  geom_line()+
+  transition_reveal(Date_reported)
+```
+
