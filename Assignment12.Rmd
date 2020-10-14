@@ -1,0 +1,113 @@
+---
+title: "Assignment 12"
+author: "Gina Catellier"
+date: "10/12/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(message = FALSE)
+```
+
+-------
+
+1. Install the package `mlbench` and use the follows to import the data
+
+```{r}
+library(mlbench)
+data(PimaIndiansDiabetes)
+df <- PimaIndiansDiabetes
+```
+
+- Set seed to be 2020. 
+- The target variable is `diabetes`
+- Partition the data into 80% training and 20% testing.  
+
+```{r}
+library(caret)
+set.seed(2020)
+
+names(df)[9] <- 'target'
+splitIndex <- createDataPartition(df$target, p = .80,
+                                  list = FALSE)
+df_train <- df[ splitIndex,]
+df_test <- df[-splitIndex,]
+```
+
+-------
+
+2. Use cross-validation of 30 folds to tune random forest (method='rf').  What is the `mtry` value that produces the greatest accuracy?
+
+```{r}
+tuneGrid = expand.grid(mtry = 2:4)
+
+trControl = trainControl(method = "cv",
+                         number = 30)
+
+forest_cv <- train(target~., data=df_train, 
+                                method = "rf", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+
+plot(forest_cv)
+```
+
+ 
+The 'mtry' value of 2 produces the greatest accuracy.
+ 
+-------
+
+3. Use cross-validation with of 30 folds to tune random forest (method='ranger').  What are the parameters that produce the greatest accuracy?
+
+```{r}
+tuneGrid = expand.grid(mtry = 2:4,
+                       splitrule = c('gini', 'extratrees'),
+                       min.node.size = c(1:10))
+
+ranger_cv <- train(target~., data=df_train, 
+                                method = "ranger", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+
+plot(ranger_cv)
+
+```
+
+The parameters that produce the greatest accuracy are 3 predictors, with extratrees at 7.
+
+-------
+
+4. Go to https://topepo.github.io/caret/available-models.html and pick a classification model.  Tune the classification model using cross-validation of 30 folds. 
+
+```{r}
+tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
+
+trees_cv <- train(target~., data=df_train, 
+                                method = "ada", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+
+plot(trees_cv)
+```
+
+
+I used Boosted Classification Trees ('ada'), which shows the greatest accuracy is with a max depth of 4.
+
+
+5. Compare the three models in question 2, 3, and 4 to select the final model.  Evaluate the accuracy of the final model on the test data. 
+
+```{r}
+results <- resamples(list(forest = forest_cv,
+                          ranger = ranger_cv,
+                          tree= trees_cv))
+bwplot(results)
+```
+
+```{r}
+pred <- predict(ranger_cv, df_test)
+cm <- confusionMatrix(data = pred, reference = df_test$target, positive = "pos")
+cm$overall[1]
+```
+
+
+The final model would be ranger, which has an accuracy of 0.7777778.
