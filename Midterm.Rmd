@@ -1,0 +1,425 @@
+---
+title: "Midterm"
+author: "Gina Catellier"
+date: "10/14/2020"
+output: html_document
+---
+-------
+
+# Instruction
+
+The midterm has two components: the Rmarkdown notebook (html) and the presentation.  The notebook and the presentation file are due Nov 26. We will do the presentation in class 
+
+**The notebook:** The notebook should be created using `rmarkdown` (like other assignments). The notebook should have a title. 
+
+
+**The Presentation:** Present your results in 5-10 minutes. To make the presentation using Rmarkdown, do the follows: 
+
+    - In Rstudio -> File -> New File -> R markdown
+    
+    - In the left panel, click to Presentation -> Click OK
+    
+    - Now you have an Rmarkdown that can be knitted to be a html presentation 
+    
+
+**Data:**  The data for the mid-term project is the Rhode Island Department of Health Hospital Discharge Data.  Each row of the data presents a patient. 
+
+Link: https://drive.google.com/open?id=15QNBf6YYKocK2nNIfpKDer58kQnCPNZJ 
+
+-------
+
+## I. Data Wranggling
+
+1. Download the data file `hdd0318cy.sas7bdat`.  
+
+2. Use `read_sas` in library `haven` to read the data.
+
+```{r}
+library(tidyverse)
+library(haven)
+df = read_sas('hdd0318cy.sas7bdat')
+```
+    
+3. Filter the data to have only patients of the year 2018 (`yod==2018`)
+
+```{r}
+df <- filter(df, yod=='18')
+```
+
+    
+4. Select to work with only following variables: 
+
+```{r, eval=FALSE}
+                      "yod", "payfix","pay_ub92","age",  
+                      "sex","raceethn","provider","moa", 
+                      "yoa","mod","admtype", "asource" , 
+                      "preopday" ,"los", "service" , "icu","ccu",    
+                      "dispub92", "payer"  ,"drg","trandb", 
+                      "randbg","randbs","orr", "anes","seq",   
+                      "lab","dtest", "ther","blood","phar", 
+                      "other","patcon","bwght","total","tot" ,  
+                      "ecodub92","b_wt","pt_state","diag_adm","ancilar" ,
+                      "campus","er_fee","er_chrg","er_mode","obs_chrg",
+                      "obs_hour","psycchrg","nicu_day"
+```
+ 
+```{r}
+df <- select(df, yod, payfix, pay_ub92, age, sex, raceethn, provider, moa, yoa, mod, admtype, asource, preopday, los, service, icu, ccu, dispub92, payer, drg, trandb, randbg, randbs, orr, anes, seq, lab, dtest, ther, blood, phar, other, patcon, bwght, total, tot, ecodub92, b_wt, pt_state, diag_adm, ancilar, campus, er_fee, er_chrg, er_mode, obs_chrg, obs_hour, psycchrg, nicu_day)
+```
+
+ 
+*Notice*:  You may want to save the current data on your laptop if you want to read it again.  To save the data file use `write_csv(df, 'midterm.csv')`, for example.  
+
+```{r}
+write_csv(df, 'midterm.csv')
+```
+
+5. What are variables that have missing values?
+
+```{r}
+colSums(is.na(df))
+```
+ 
+6. Remove all variables with missing values
+
+```{r}
+df$payfix <- NULL
+df$preopday <- NULL 
+df$obs_hour <- NULL
+df$nicu_day <- NULL
+```
+ 
+7. Refer to the data description in the file `HDD2015-18cy6-20-19.docx`, which variable recording the month of admission?, which variable recording the month of discharge?
+
+'moa' records the month of admission.
+'mod' records the month of discharge.
+
+8. Which month admitted the most number of patients? Which month admitted the most number of male patients?
+
+```{r}
+library(dplyr)
+
+df %>% group_by(moa) %>% summarise(patient_count = n()) %>% arrange(-patient_count)
+```
+
+```{r}
+df %>% filter(sex == 1) %>% group_by(moa) %>% summarise(patient_count = n()) %>% arrange(-patient_count)
+```
+
+9. Which month has the most number of teenage female patients?
+
+```{r}
+df$age2 <- case_when(
+          df$age < 13 ~ 'child',
+          df$age < 20 ~ 'teenager',
+          TRUE ~ 'adult')
+
+df %>% filter(age2 == 'teenager', sex == 2) %>% group_by(moa) %>% summarise(patient_count = n()) %>% arrange(-patient_count)
+```
+
+10. Which provider has the most number of female patients in October? 
+
+```{r}
+df %>% filter(moa == 10, sex == 2) %>% group_by(provider) %>% summarise(patient_count = n()) %>% arrange(-patient_count)
+```
+
+11. Is female patients older than male patients, on average? 
+
+```{r}
+df_female <- df %>% filter(sex == 2)
+df_male <- df%>% filter(sex == 1)
+
+mean(df_female$age) > mean(df_male$age)
+```
+
+12. Calculate the average age of patients by months. Which month has the oldest patients on average age?
+
+```{r}
+df %>% group_by(moa) %>% summarise(average_age = mean(age)) %>% arrange(-average_age)
+```
+
+13. What is the name of the provider that has the highest total charge?
+
+```{r}
+df %>% group_by(provider) %>% summarise(total_charge = sum(tot)) %>% arrange(-total_charge)
+```
+
+Provider 7205 is Rhode Island Hospital.
+
+14. What is the name of the provider that has the least total charge for teenage male?
+
+```{r}
+df %>% filter(sex == 1, age2 == 'teenager') %>%  group_by(provider) %>% summarise(total_charge = sum(tot)) %>% arrange(total_charge)
+```
+
+Provider 7214 is Woman and Infants.
+
+15. Calculate the length of stays by races.  Which race has the longest length of stays on average?
+
+```{r}
+df %>% group_by(raceethn) %>% summarise(average_stay = mean(los)) %>% arrange(-average_stay)
+```
+
+Race 9 is unknown, so the longest stay by known race would be race 4 which is American Indian.
+
+16. On average, how much a 20 year-old male white get charged for staying 1 day?
+
+```{r}
+df %>% filter(age == 20, sex == 1, raceethn == 1, los ==1) %>% summarise(average_charge = mean(tot))
+```
+
+-------
+
+## II. Data Visualization
+
+Continue with the data from part I. 
+
+1. Provides at least 10 meaningful plots. Comments on the plots. All plots should have title, caption, appropriate labels on x and y-axis
+
+```{r}
+df %>% filter(sex == 1 | sex == 2) %>% 
+ggplot(mapping=aes(x=age, y=tot, color=sex))+ geom_point()+ facet_wrap(~sex) +labs(title = 'Total Cost by Age', y = 'Total Cost', x = 'Age', caption = 'There is no significant difference between male and female for total cost by age.')
+```
+
+```{r}
+df %>% filter(sex == 1 | sex == 2) %>% ggplot() + geom_bar(mapping=aes(x=raceethn, fill=sex), position='dodge') + labs(title = 'Count of Race by Sex', x = 'Race', y = 'Number of Patients', caption = 'All races had slightly more female patients than male patients.')
+```
+
+
+```{r}
+df %>% filter(sex == 1 | sex == 2) %>% group_by(sex) %>% summarise(average_price = mean(tot)) %>% ggplot() + geom_col(mapping=aes(x=sex, y=average_price, fill=sex)) + labs(title = 'Average Price by Sex', x = 'Sex', y='Average Price', caption = 'Average price for male was about $5,000 higher than that for a female.')
+```
+
+
+```{r}
+df %>% group_by(raceethn) %>% summarise(average_price = mean(tot)) %>% ggplot() + geom_col(mapping=aes(x=raceethn, y=average_price, fill=raceethn))+labs(title= 'Average Price by Race', x = 'Race', y = 'Average Price', caption = 'The highest average price was for race 1 (White) and the lowest average price was for race 3 (Asian).')
+```
+
+```{r}
+df %>% group_by(age) %>% summarise(average_price = mean(tot)) %>% ggplot() + geom_col(mapping=aes(x=age, y=average_price, fill=age)) + labs(title = 'Average Price by Age', x = 'Age', y = 'Average Price', caption = 'This shows a large spike in average price around the ages 10 to 20.')
+```
+
+```{r}
+df %>% group_by(age2) %>% summarise(average_price = mean(tot)) %>% ggplot() + geom_col(mapping=aes(x=age2, y=average_price, fill=age2)) +labs(title = 'Average Price by Age', x = 'Age', y = 'Average Price', caption = 'The average price for a teenager is the greatest.')
+```
+
+```{r}
+df %>% filter(sex == 1 | sex == 2) %>% 
+ggplot(mapping=aes(x=admtype, fill=sex))+ geom_bar()+ facet_wrap(~sex) +labs(title = 'Count of Admission Type by Sex', x = 'Admission Type', y = 'Number of Patients', caption = 'Admission Type 1 (Emergency) is the most common admission type for both males and females.')
+```
+
+```{r}
+df %>% ggplot(mapping=aes(x=admtype, fill=age2))+ geom_bar()+ facet_wrap(~age2) + labs(title = 'Count of Admission Type by Age', x = 'Admission Type', y = 'Number of Patients', caption = 'All age groups have Admission Types 1 and 2 (Emergency and Urgent) in their most popular types.')
+```
+
+```{r}
+df %>% filter(age2 == 'child' | age2 == 'teenager') %>% ggplot(mapping=aes(x=admtype, fill=age2))+ geom_bar()+ facet_wrap(~age2) + labs(title = 'Count of Admission Type by Age', x = 'Admission Type', y = 'Number of Patients', caption = 'Both child and teenager results resemble that of an adult. The exception is the large amount of admission type 4 (newborn) for child')
+```
+
+```{r}
+df %>% group_by(age2) %>% summarise(average_los = mean(los)) %>% ggplot(mapping=aes(x=age2, y=average_los, fill=age2))+ geom_col() + labs(title = 'Average Length of Stay by Age', x = 'Age', y = 'Average Length of Stay', caption = 'The average length of stay for a teenager is greater than that of a child or an adult.')
+```
+
+2. Make an animation
+
+```{r}
+library(gganimate)
+library(gifski)
+
+df %>% 
+  group_by(moa,age2) %>%
+  summarise(average_los = mean(los)) %>%
+  ggplot(aes(y=average_los,
+            x=moa,
+            color=age2,
+            fill=age2))+ labs(title = 'Average Length of Stay by Age by Month of Admission', x = 'Month of Admission', y = 'Average Length of Stay')+
+  geom_point(size=3)+
+  geom_text(aes(label = average_los), 
+            hjust = -.1, size=3)+
+  geom_line()+
+  transition_reveal(moa)
+```
+
+-------
+
+## III. Predictive Models
+
+Continue with the data from part I. Use the follows as the target and input variables: 
+
+*Target Variable*: Create the target variable taking value of 
+
+  - `low cost` if the total charge of a patient (`tot`) is smaller than the median of the total charge, and
+
+  - `high cost` otherwise. 
+  
+```{r}
+df$cost <- case_when(
+          df$tot < mean(df$tot) ~ 'low_cost',
+          TRUE ~ 'high_cost')
+```
+
+*Input Variables*:
+
+  - "age","sex","raceethn","provider","moa","mod","admtype","campus", 'los'
+ 
+```{r}
+df1 <- select(df, age, sex, raceethn, provider, moa, mod, admtype, campus, los, cost)
+
+df1 <- df1 %>% filter(raceethn != '', admtype != '')
+
+```
+  
+-------
+
+1. Make sure all the categorical variables are factor, numeric variables are numeric. Set Training : Testing Split = 10 : 90 
+
+```{r}
+library(mlbench)
+library(caret)
+set.seed(2020)
+
+names(df1)[10] <- 'target'
+splitIndex <- createDataPartition(df1$target, p = .90,
+                                  list = FALSE)
+df_train <- df1[splitIndex,]
+df_test <- df1[-splitIndex,]
+```
+
+2. Train a decision tree using `rpart`.  Plot the decision tree. Plot the variable importance ranked by the tree. 
+
+```{r}
+library(rpart)
+tree_model <- rpart(target ~ ., data = df_train,
+                 control = rpart.control(maxdepth = 3))
+
+library(rattle)
+fancyRpartPlot(tree_model)
+```
+
+```{r}
+barplot(tree_model$variable.importance)
+```
+
+
+3. Using caret for this question. Set `Training Control` to be: Use Cross-Validation of 5 folds across all models.  Train & tune at least 3 different models (i.e. three different values for `method=` in the train function of caret).  Plot the hyper-parameter tuning plots for each model. 
+
+```{r}
+tuneGrid = expand.grid(maxdepth = 1:5)
+
+trControl = trainControl(method = "cv",
+                         number = 5)
+
+tree_approach1 <- train(target~., data=df_train, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach1)
+```
+
+```{r}
+tuneGrid = expand.grid(maxdepth = 2:4, mstop=3)
+tree_approach2 <- train(target~., data=df_train, 
+                                method = "blackboost", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach2)
+```
+
+```{r}
+tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
+
+tree_approach3 <- train(target~., data=df_train, 
+                                method = "ada", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+
+plot(tree_approach3)
+```
+
+4. Plot the comparison of the models in 2. 
+
+```{r}
+results <- resamples(list(rpart2 = tree_approach1,
+                          blackboost = tree_approach2,
+                          ada = tree_approach3))
+bwplot(results)
+```
+
+5. What is your final selection for the model? Test the accuracy of your final model on the test data. 
+
+```{r}
+pred <- predict(tree_approach3, df_test)
+cm <- confusionMatrix(data = pred, reference = 
+as.factor(df_test$target), positive = "high_cost")
+cm$overall[1]
+```
+
+
+6. Create another `target` variable (binary), decide the input variables and redo 1 to 5. 
+
+-------
+```{r}
+df2 <- select(df, age, sex, raceethn, provider, moa, mod, admtype, campus, los, cost)
+
+df2 <- df2 %>% filter(raceethn != '', admtype != '', sex == 1 | sex == 2)
+```
+
+```{r}
+names(df2)[2] <- 'target'
+splitIndex <- createDataPartition(df2$target, p = .90,
+                                  list = FALSE)
+df2_train <- df2[splitIndex,]
+df2_test <- df2[-splitIndex,]
+```
+
+
+```{r}
+tuneGrid = expand.grid(maxdepth = 1:5)
+
+trControl = trainControl(method = "cv",
+                         number = 5)
+
+tree_approach1_2 <- train(target~., data=df2_train, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach1_2)
+```
+
+
+```{r}
+tuneGrid = expand.grid(maxdepth = 2:4, mstop=3)
+tree_approach2_2 <- train(target~., data=df2_train, 
+                                method = "blackboost", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach2_2)
+```
+
+
+```{r}
+tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
+
+tree_approach3_2 <- train(target~., data=df2_train, 
+                                method = "ada", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+
+plot(tree_approach3_2)
+```
+
+
+```{r}
+results <- resamples(list(rpart2 = tree_approach1_2,
+                          blackboost = tree_approach2_2,
+                          ada = tree_approach3_2))
+bwplot(results)
+```
+
+
+```{r}
+pred <- predict(tree_approach3_2, df2_test)
+cm <- confusionMatrix(data = pred, reference = 
+as.factor(df2_test$target), positive = "1")
+cm$overall[1]
+```
