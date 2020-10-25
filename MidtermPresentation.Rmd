@@ -1,0 +1,423 @@
+---
+title: "Midterm Presentation"
+author: "Gina Catellier"
+date: "10/22/2020"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Data Visualizations
+
+```{r, message=FALSE}
+library(tidyverse)
+library(haven)
+df = read_sas('hdd0318cy.sas7bdat')
+
+df <- filter(df, yod=='18')
+
+df <- select(df, yod, payfix, pay_ub92, age, sex, raceethn, provider, moa, yoa, mod, admtype, asource, preopday, los, service, icu, ccu, dispub92, payer, drg, trandb, randbg, randbs, orr, anes, seq, lab, dtest, ther, blood, phar, other, patcon, bwght, total, tot, ecodub92, b_wt, pt_state, diag_adm, ancilar, campus, er_fee, er_chrg, er_mode, obs_chrg, obs_hour, psycchrg, nicu_day)
+
+df$payfix <- NULL
+df$preopday <- NULL 
+df$obs_hour <- NULL
+df$nicu_day <- NULL
+
+df$age2 <- case_when(
+          df$age < 13 ~ 'child',
+          df$age < 20 ~ 'teenager',
+          TRUE ~ 'adult')
+```
+**Variables Focused On:**
+
+
+- sex
+
+- raceethn
+
+- age & age2
+
+- admtype
+
+- los
+
+- tot
+
+## Price by Sex vs Price by Race
+
+```{r, message=FALSE}
+df %>% filter(sex == 1 | sex == 2) %>% group_by(sex) %>% summarise(average_price = mean(tot)) %>% ggplot() + geom_col(mapping=aes(x=sex, y=average_price, fill=sex)) + labs(title = 'Average Price by Sex', x = 'Sex', y='Average Price')
+```
+
+---
+
+```{r, message=FALSE}
+df %>% group_by(raceethn) %>% summarise(average_price = mean(tot)) %>% ggplot() + geom_col(mapping=aes(x=raceethn, y=average_price, fill=raceethn))+labs(title= 'Average Price by Race', x = 'Race', y = 'Average Price')
+```
+
+## Comparison
+
+- Average price for male was about $5,000 higher than that for a female. 
+
+- Average price for all races are around within $5,000 of each other.
+
+- The highest average price was for race 1 (White) and the lowest average price was for race 3 (Asian).
+
+## Correlation of Race vs Sex
+
+```{r, message=FALSE}
+df %>% filter(sex == 1 | sex == 2) %>% ggplot() + geom_bar(mapping=aes(x=raceethn, fill=sex), position='dodge') + labs(title = 'Count of Race by Sex', x = 'Race', y = 'Number of Patients')
+```
+
+---
+
+
+**Correlation of Race vs Sex**
+
+
+- A large majority of patients were of race 1 (white).
+
+- All races had slightly more female patients than male patients.
+
+- This connects to the fact that average cost for male is greater than average cost for female.
+
+
+## Average Price by Age
+
+```{r, message=FALSE}
+df %>% group_by(age) %>% summarise(average_price = mean(tot)) %>% ggplot() + geom_col(mapping=aes(x=age, y=average_price, fill=age)) + labs(title = 'Average Price by Age', x = 'Age', y = 'Average Price')
+```
+
+---
+
+
+**Average Price by Age**
+
+
+- This shows a large spike in average price around the ages 10 to 20.
+
+- The lowest average price was from ages 25 to 35.
+
+- There is a bell curve for average price from ages 35 to 95.
+
+## Total Cost by Age by Sex
+
+```{r, message=FALSE}
+df %>% filter(sex == 1 | sex == 2) %>% 
+ggplot(mapping=aes(x=age, y=tot, color=sex))+ geom_point()+ facet_wrap(~sex) +labs(title = 'Total Cost by Age', y = 'Total Cost', x = 'Age')
+```
+
+---
+
+
+**Total Cost by Age by Sex**
+
+
+- This shows a very similar trend to that of average price by age.
+
+- There is no significant difference between male and female for total cost by age.
+
+## Total Cost by Age Categorical
+
+```{r, message=FALSE}
+df %>% group_by(age2) %>% summarise(average_price = mean(tot)) %>% ggplot() + geom_col(mapping=aes(x=age2, y=average_price, fill=age2)) +labs(title = 'Average Price by Age', x = 'Age', y = 'Average Price')
+```
+
+---
+
+
+**Total Cost by Age Categorical**
+
+
+- Average price for teenager is about $15,000 more than average price for child.
+
+- Average price for teenager is about $5,000 more than average price for adult.
+
+## Count of Admission Type by Sex
+
+```{r, message=FALSE}
+df %>% filter(sex == 1 | sex == 2) %>% 
+ggplot(mapping=aes(x=admtype, fill=sex))+ geom_bar()+ facet_wrap(~sex) +labs(title = 'Count of Admission Type by Sex', x = 'Admission Type', y = 'Number of Patients')
+```
+
+---
+
+**Count of Admission Type by Sex**
+
+- Admission Type 1 (Emergency) is the most common admission type for both males and females.
+
+- Females are slightly higher in every admission type than males.
+
+## Count of Admission Type by Age
+
+```{r, message=FALSE}
+df %>% ggplot(mapping=aes(x=admtype, fill=age2))+ geom_bar()+ facet_wrap(~age2) + labs(title = 'Count of Admission Type by Age', x = 'Admission Type', y = 'Number of Patients')
+```
+
+---
+
+
+**Count of Admission Type by Age**
+
+
+- Adult very closely resembles the graph for both male and female.
+
+- All age groups have Admission Types 1 and 2 (Emergency and Urgent) in their most popular types.
+
+## Count of Admission Type by Age (Not Adult)
+
+```{r, message=FALSE}
+df %>% filter(age2 == 'child' | age2 == 'teenager') %>% ggplot(mapping=aes(x=admtype, fill=age2))+ geom_bar()+ facet_wrap(~age2) + labs(title = 'Count of Admission Type by Age', x = 'Admission Type', y = 'Number of Patients')
+```
+
+
+---
+
+
+**Count of Admission Type by Age(Not Adult)**
+
+
+- Now, both child and teenager results resemble that of an adult.
+
+- The exception is the large amount of admission type 4 (newborn) for child.
+
+## Average Length of Stay by Age
+
+```{r, message=FALSE}
+df %>% group_by(age2) %>% summarise(average_los = mean(los)) %>% ggplot(mapping=aes(x=age2, y=average_los, fill=age2))+ geom_col() + labs(title = 'Average Length of Stay by Age', x = 'Age', y = 'Average Length of Stay')
+```
+
+
+---
+
+
+**Average Length of Stay by Age**
+
+
+- For child and adult, the average length of stay is about 5 days.
+
+- For teenager, the average length of stay is about 9 days.
+
+- This could explain why teenager costs were so much higher, on average.
+
+## Average Length of Stay by Age by Month of Admission
+
+```{r, message=FALSE}
+library(gganimate)
+library(gifski)
+
+df %>% 
+  group_by(moa,age2) %>%
+  summarise(average_los = mean(los)) %>%
+  ggplot(aes(y=average_los,
+            x=moa,
+            color=age2,
+            fill=age2))+ labs(title = 'Average Length of Stay by Age by Month of Admission', x = 'Month of Admission', y = 'Average Length of Stay')+
+  geom_point(size=3)+
+  geom_text(aes(label = average_los), 
+            hjust = -.1, size=3)+
+  geom_line()+
+  transition_reveal(moa)
+```
+
+## Predictive Modeling
+**Target Variable = cost**
+
+```{r, message=FALSE}
+df$cost <- case_when(
+          df$tot < mean(df$tot) ~ 'low_cost',
+          TRUE ~ 'high_cost')
+
+df1 <- select(df, age, sex, raceethn, provider, moa, mod, admtype, campus, los, cost)
+
+df1 <- df1 %>% filter(raceethn != '', admtype != '')
+
+library(mlbench)
+library(caret)
+set.seed(2020)
+
+names(df1)[10] <- 'target'
+splitIndex <- createDataPartition(df1$target, p = .90,
+                                  list = FALSE)
+df_train <- df1[splitIndex,]
+df_test <- df1[-splitIndex,]
+```
+
+Decision Tree Using rpart
+
+```{r, message=FALSE}
+library(rpart)
+tree_model <- rpart(target ~ ., data = df_train,
+                 control = rpart.control(maxdepth = 3))
+
+library(rattle)
+fancyRpartPlot(tree_model)
+```
+
+---
+
+Variable Importance
+
+```{r, message=FALSE}
+barplot(tree_model$variable.importance)
+```
+
+
+## Comparing Models
+
+- rpart2
+
+- blackboost
+
+- ada
+
+---
+
+rpart2
+```{r, message=FALSE, echo=FALSE}
+tuneGrid = expand.grid(maxdepth = 1:5)
+
+trControl = trainControl(method = "cv",
+                         number = 5)
+
+tree_approach1 <- train(target~., data=df_train, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach1)
+```
+
+
+---
+
+blackboost
+```{r, message=FALSE, echo=FALSE}
+tuneGrid = expand.grid(maxdepth = 2:4, mstop=3)
+tree_approach2 <- train(target~., data=df_train, 
+                                method = "blackboost", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach2)
+```
+
+
+---
+
+ada
+```{r, message=FALSE, echo=FALSE}
+tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
+
+tree_approach3 <- train(target~., data=df_train, 
+                                method = "ada", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+
+plot(tree_approach3)
+```
+
+
+## Comparison
+
+```{r, message=FALSE}
+results <- resamples(list(rpart2 = tree_approach1,
+                          blackboost = tree_approach2,
+                          ada = tree_approach3))
+bwplot(results)
+```
+
+
+## Accuracy of Final Model
+
+pred <- predict(tree_approach3, df_test)
+cm <- confusionMatrix(data = pred, reference = 
+as.factor(df_test$target), positive = "high_cost")
+cm$overall[1]
+
+```{r, message=FALSE}
+pred <- predict(tree_approach3, df_test)
+cm <- confusionMatrix(data = pred, reference = 
+as.factor(df_test$target), positive = "high_cost")
+cm$overall[1]
+```
+
+
+## Target Variable = sex
+
+```{r, message=FALSE}
+df2 <- select(df, age, sex, raceethn, provider, moa, mod, admtype, campus, los, cost)
+
+df2 <- df2 %>% filter(raceethn != '', admtype != '', sex == 1 | sex == 2)
+
+names(df2)[2] <- 'target'
+splitIndex <- createDataPartition(df2$target, p = .90,
+                                  list = FALSE)
+df2_train <- df2[splitIndex,]
+df2_test <- df2[-splitIndex,]
+
+```
+
+rpart2
+```{r, message=FALSE, echo=FALSE}
+tuneGrid = expand.grid(maxdepth = 1:5)
+
+trControl = trainControl(method = "cv",
+                         number = 5)
+
+tree_approach1_2 <- train(target~., data=df2_train, 
+                                method = "rpart2", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach1_2)
+```
+
+
+---
+blackboost
+```{r}
+tuneGrid = expand.grid(maxdepth = 2:4, mstop=3)
+tree_approach2_2 <- train(target~., data=df2_train, 
+                                method = "blackboost", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+plot(tree_approach2_2)
+```
+
+
+---
+ada
+```{r, message=FALSE, echo=FALSE}
+tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
+
+tree_approach3_2 <- train(target~., data=df2_train, 
+                                method = "ada", 
+                                trControl = trControl,
+                                tuneGrid = tuneGrid)
+
+plot(tree_approach3_2)
+```
+
+##Comparison
+
+```{r, message=FALSE, echo=FALSE}
+results <- resamples(list(rpart2 = tree_approach1_2,
+                          blackboost = tree_approach2_2,
+                          ada = tree_approach3_2))
+bwplot(results)
+```
+
+##Accuracy of Final Model
+
+pred <- predict(tree_approach3_2, df2_test)
+cm <- confusionMatrix(data = pred, reference = 
+as.factor(df2_test$target), positive = "1")
+cm$overall[1]
+
+```{r, message=FALSE, echo=FALSE}
+pred <- predict(tree_approach3_2, df2_test)
+cm <- confusionMatrix(data = pred, reference = 
+as.factor(df2_test$target), positive = "1")
+cm$overall[1]
+```
+
