@@ -28,8 +28,8 @@
 
 [Midterm](Midterm.html)
 
-[Midterm RMD](Midterm.rmd)
+[Midterm RMD](Midterm.Rmd)
 
 [Midterm Presentation](MidtermPresentation.html)
 
-[Midterm Presentation RMD](MidtermPresentation.rmd)
+[Midterm Presentation RMD](MidtermPresentation.Rmd)
