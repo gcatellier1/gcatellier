@@ -1,8 +1,10 @@
 ---
 title: "Midterm Presentation"
 author: "Gina Catellier"
-date: "10/22/2020"
-output: ioslides_presentation
+date: "10/26/2020"
+output:
+  slidy_presentation: default
+  ioslides_presentation: default
 ---
 
 ```{r setup, include=FALSE}
@@ -226,7 +228,7 @@ df %>% group_by(age2) %>% summarise(average_los = mean(los)) %>% ggplot(mapping=
 
 ## Average Length of Stay by Age by Month of Admission
 
-```{r step12811101, eval = FALSE, echo = TRUE}
+```{r, echo = FALSE, fig.height = 2, fig.width = 4}
 library(gganimate)
 library(gifski)
 
@@ -243,12 +245,6 @@ df %>%
   geom_line()+
   transition_reveal(moa)
 ```
-
----
-
-```{r, ref.label = "step12811101", echo = FALSE, cache = TRUE, fig.height = 6, fig.width = 7}
-```
-
 
 ## Predictive Modeling
 **Target Variable = cost**
@@ -297,15 +293,16 @@ barplot(tree_model$variable.importance)
 
 ## Comparing Models
 
-- rpart2
+- rpart2 (regression)
 
-- blackboost
+- blackboost (boosted tree)
 
-- ada
+- ada (multistep classification)
 
 ---
 
 rpart2
+
 ```{r, message=FALSE}
 tuneGrid = expand.grid(maxdepth = 1:5)
 
@@ -323,6 +320,7 @@ plot(tree_approach1)
 ---
 
 blackboost
+
 ```{r, message=FALSE}
 tuneGrid = expand.grid(maxdepth = 2:4, mstop=3)
 tree_approach2 <- train(target~., data=df_train, 
@@ -336,6 +334,7 @@ plot(tree_approach2)
 ---
 
 ada
+
 ```{r, include=FALSE}
 tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
 
@@ -361,12 +360,7 @@ bwplot(results)
 
 ## Accuracy of Final Model
 
-pred <- predict(tree_approach3, df_test)
-cm <- confusionMatrix(data = pred, reference = 
-as.factor(df_test$target), positive = "high_cost")
-cm$overall[1]
-
-```{r, message=FALSE}
+```{r, message=FALSE, echo=TRUE}
 pred <- predict(tree_approach3, df_test)
 cm <- confusionMatrix(data = pred, reference = 
 as.factor(df_test$target), positive = "high_cost")
@@ -390,6 +384,7 @@ df2_test <- df2[-splitIndex,]
 ```
 
 rpart2
+
 ```{r, message=FALSE, echo=FALSE}
 tuneGrid = expand.grid(maxdepth = 1:5)
 
@@ -408,6 +403,7 @@ plot(tree_approach1_2)
 
 
 blackboost
+
 ```{r, message=FALSE, echo=FALSE}
 tuneGrid = expand.grid(maxdepth = 2:4, mstop=3)
 tree_approach2_2 <- train(target~., data=df2_train, 
@@ -423,6 +419,7 @@ plot(tree_approach2_2)
 
 
 ada
+
 ```{r, include=FALSE}
 tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
 
@@ -438,23 +435,19 @@ plot(tree_approach3_2)
 ```
 
 
-##Comparison 2
+## Comparison
 
-```{r, message=FALSE}
+```{r}
 results <- resamples(list(rpart2 = tree_approach1_2,
                           blackboost = tree_approach2_2,
                           ada = tree_approach3_2))
 bwplot(results)
 ```
 
-##Accuracy of Final Model 2
+## Accuracy of Final Model
 
-pred <- predict(tree_approach3_2, df2_test)
-cm <- confusionMatrix(data = pred, reference = 
-as.factor(df2_test$target), positive = "1")
-cm$overall[1]
 
-```{r, message=FALSE}
+```{r, echo=TRUE}
 pred <- predict(tree_approach3_2, df2_test)
 cm <- confusionMatrix(data = pred, reference = 
 as.factor(df2_test$target), positive = "1")
