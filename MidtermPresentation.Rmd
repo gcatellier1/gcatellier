@@ -74,6 +74,9 @@ df %>% filter(sex == 1 | sex == 2) %>% ggplot() + geom_bar(mapping=aes(x=raceeth
 ---
 
 
+
+
+
 **Correlation of Race vs Sex**
 
 
@@ -91,6 +94,9 @@ df %>% group_by(age) %>% summarise(average_price = mean(tot)) %>% ggplot() + geo
 ```
 
 ---
+
+
+
 
 
 **Average Price by Age**
@@ -112,6 +118,9 @@ ggplot(mapping=aes(x=age, y=tot, color=sex))+ geom_point()+ facet_wrap(~sex) +la
 ---
 
 
+
+
+
 **Total Cost by Age by Sex**
 
 
@@ -126,6 +135,9 @@ df %>% group_by(age2) %>% summarise(average_price = mean(tot)) %>% ggplot() + ge
 ```
 
 ---
+
+
+
 
 
 **Total Cost by Age Categorical**
@@ -144,6 +156,9 @@ ggplot(mapping=aes(x=admtype, fill=sex))+ geom_bar()+ facet_wrap(~sex) +labs(tit
 
 ---
 
+
+
+
 **Count of Admission Type by Sex**
 
 - Admission Type 1 (Emergency) is the most common admission type for both males and females.
@@ -159,6 +174,8 @@ df %>% ggplot(mapping=aes(x=admtype, fill=age2))+ geom_bar()+ facet_wrap(~age2) 
 ---
 
 
+
+
 **Count of Admission Type by Age**
 
 
@@ -166,7 +183,7 @@ df %>% ggplot(mapping=aes(x=admtype, fill=age2))+ geom_bar()+ facet_wrap(~age2) 
 
 - All age groups have Admission Types 1 and 2 (Emergency and Urgent) in their most popular types.
 
-## Count of Admission Type by Age (Not Adult)
+## Count of Admission Type by Age2
 
 ```{r, message=FALSE}
 df %>% filter(age2 == 'child' | age2 == 'teenager') %>% ggplot(mapping=aes(x=admtype, fill=age2))+ geom_bar()+ facet_wrap(~age2) + labs(title = 'Count of Admission Type by Age', x = 'Admission Type', y = 'Number of Patients')
@@ -174,6 +191,8 @@ df %>% filter(age2 == 'child' | age2 == 'teenager') %>% ggplot(mapping=aes(x=adm
 
 
 ---
+
+
 
 
 **Count of Admission Type by Age(Not Adult)**
@@ -193,7 +212,10 @@ df %>% group_by(age2) %>% summarise(average_los = mean(los)) %>% ggplot(mapping=
 ---
 
 
+
+
 **Average Length of Stay by Age**
+
 
 
 - For child and adult, the average length of stay is about 5 days.
@@ -204,7 +226,7 @@ df %>% group_by(age2) %>% summarise(average_los = mean(los)) %>% ggplot(mapping=
 
 ## Average Length of Stay by Age by Month of Admission
 
-```{r, message=FALSE}
+```{r step12811101, eval = FALSE, echo = TRUE}
 library(gganimate)
 library(gifski)
 
@@ -221,6 +243,12 @@ df %>%
   geom_line()+
   transition_reveal(moa)
 ```
+
+---
+
+```{r, ref.label = "step12811101", echo = FALSE, cache = TRUE, fig.height = 6, fig.width = 7}
+```
+
 
 ## Predictive Modeling
 **Target Variable = cost**
@@ -244,6 +272,8 @@ splitIndex <- createDataPartition(df1$target, p = .90,
 df_train <- df1[splitIndex,]
 df_test <- df1[-splitIndex,]
 ```
+
+---
 
 Decision Tree Using rpart
 
@@ -276,7 +306,7 @@ barplot(tree_model$variable.importance)
 ---
 
 rpart2
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE}
 tuneGrid = expand.grid(maxdepth = 1:5)
 
 trControl = trainControl(method = "cv",
@@ -293,7 +323,7 @@ plot(tree_approach1)
 ---
 
 blackboost
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE}
 tuneGrid = expand.grid(maxdepth = 2:4, mstop=3)
 tree_approach2 <- train(target~., data=df_train, 
                                 method = "blackboost", 
@@ -306,17 +336,18 @@ plot(tree_approach2)
 ---
 
 ada
-```{r, message=FALSE, echo=FALSE}
+```{r, include=FALSE}
 tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
 
 tree_approach3 <- train(target~., data=df_train, 
                                 method = "ada", 
                                 trControl = trControl,
                                 tuneGrid = tuneGrid)
-
-plot(tree_approach3)
 ```
 
+```{r}
+plot(tree_approach3)
+```
 
 ## Comparison
 
@@ -374,8 +405,10 @@ plot(tree_approach1_2)
 
 
 ---
+
+
 blackboost
-```{r}
+```{r, message=FALSE, echo=FALSE}
 tuneGrid = expand.grid(maxdepth = 2:4, mstop=3)
 tree_approach2_2 <- train(target~., data=df2_train, 
                                 method = "blackboost", 
@@ -386,8 +419,11 @@ plot(tree_approach2_2)
 
 
 ---
+
+
+
 ada
-```{r, message=FALSE, echo=FALSE}
+```{r, include=FALSE}
 tuneGrid = expand.grid(maxdepth = 2:4, iter=3, nu=2)
 
 tree_approach3_2 <- train(target~., data=df2_train, 
@@ -395,26 +431,30 @@ tree_approach3_2 <- train(target~., data=df2_train,
                                 trControl = trControl,
                                 tuneGrid = tuneGrid)
 
+```
+
+```{r}
 plot(tree_approach3_2)
 ```
 
-##Comparison
 
-```{r, message=FALSE, echo=FALSE}
+##Comparison 2
+
+```{r, message=FALSE}
 results <- resamples(list(rpart2 = tree_approach1_2,
                           blackboost = tree_approach2_2,
                           ada = tree_approach3_2))
 bwplot(results)
 ```
 
-##Accuracy of Final Model
+##Accuracy of Final Model 2
 
 pred <- predict(tree_approach3_2, df2_test)
 cm <- confusionMatrix(data = pred, reference = 
 as.factor(df2_test$target), positive = "1")
 cm$overall[1]
 
-```{r, message=FALSE, echo=FALSE}
+```{r, message=FALSE}
 pred <- predict(tree_approach3_2, df2_test)
 cm <- confusionMatrix(data = pred, reference = 
 as.factor(df2_test$target), positive = "1")
