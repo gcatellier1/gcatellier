@@ -33,3 +33,7 @@
 [Midterm Presentation](MidtermPresentation.html)
 
 [Midterm Presentation RMD](MidtermPresentation.Rmd)
+
+[Assignment 13](Assignment13.html)
+
+[Assignment 14](Assignment14.html)
