@@ -40,4 +40,15 @@
 
 [App 1](final/app/app.R)
 
+[App 2](final/app2/app2.R)
+
+[App 3](final/app3/app3.R)
+
+[App 4](final/app4/app4.html)
+
+[App 5](final/app5/app5.Rmd)
+
+[App 6](final/app6/app6.html)
+
+[App 7](final/app7/app7.html)
 
