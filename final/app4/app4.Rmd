@@ -1,0 +1,114 @@
+---
+title: "app4"
+author: "Gina Catellier"
+date: "11/9/2020"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+---
+```{r}
+library(tidyverse)
+library(shiny)
+library(DT)
+
+#######################################
+#
+ui <- fluidPage(
+  
+  titlePanel("App 4 : Scatterplot"),
+  
+  sidebarLayout(
+    
+    sidebarPanel(
+      
+      fileInput('f1', label = 'Upload data for visualization', accept = '.csv'),
+      
+      selectInput(
+        inputId ="var1",
+        label = "Select a Numeric Variable",
+        choices = '', 
+      ), 
+      
+      selectInput(
+        inputId ="var2",
+        label = "Select a Numeric Variable",
+        choices = '',
+      ),
+      
+      selectInput(
+        inputId ="var3",
+        label = "Select a Categorical Variable",
+        choices = '', 
+      )
+      
+      
+      
+    ),
+    
+    
+    mainPanel(
+      
+      plotOutput(outputId = 'show_plot')
+      
+    )
+  )
+)
+
+#######################################
+server <- function(input, output, session) {
+  
+  myData <- reactive({
+    inFile = input$f1
+    if (is.null(inFile)) return(NULL)
+    data <- read.csv(inFile$datapath, header = TRUE)
+    data
+  }
+    )
+  
+  output$show_plot <- renderPlot({
+    
+    inFile = input$f1
+    d <- read.csv(inFile$datapath, header = TRUE)
+    v1 = input$var1
+    v2 = input$var2
+    v3 = input$var3
+    
+    library(ggplot2)
+    
+    ggplot(d)+ geom_point(aes(x = d[[v1]], y = 
+                                d[[v2]], color = 
+                                d[[v3]]))+
+      labs(x = v1, y = v2, color = v3)
+  
+  })
+
+  observeEvent(input$f1,{ 
+    inFile = input$f1
+    data <- read.csv(inFile$datapath, header = TRUE)   
+               updateSelectInput(session, 'var1', choices = names(data))}
+               )
+  
+  observeEvent(input$f1,{ 
+    inFile = input$f1
+    data <- read.csv(inFile$datapath, header = TRUE)   
+    updateSelectInput(session, 'var2', choices = names(data))}
+    )
+  
+  observeEvent(input$f1,{ 
+    inFile = input$f1
+    data <- read.csv(inFile$datapath, header = TRUE)   
+    updateSelectInput(session, 'var3', choices = names(data))}
+    )
+  
+}
+
+
+#######################################
+shinyApp(ui = ui, server = server, options = list(height = 1000))
+```
+
