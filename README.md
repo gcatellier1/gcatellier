@@ -38,6 +38,6 @@
 
 [Assignment 14](Assignment14.html)
 
-[App 1](final/app.R)
+[App 1](final/app/app.R)
 
 
