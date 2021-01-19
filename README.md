@@ -1,5 +1,7 @@
 # Statistical Analysis with R
 
+[Jupyter Notebook Project](Group5_Phase4_FinalProject.html)
+
 [Assignment 1](Assignment1.html)
 
 [Assignment 2](Assignment2.html)
