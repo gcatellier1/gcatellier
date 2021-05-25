@@ -1,5 +1,11 @@
 # Gina Catellier - Projects
 
-[Jupyter Notebook Project (Python)](Group5_Phase4_FinalProject.html)
+[AAA Project (Python)](MLFinal.html)
 
-[RStudio Project (R)](Midterm.html)
+[Tesla Project (Python & MongoDB)](Tesla Tweets.html)
+
+[Tesla Project 2 (Python & Neo4j)](TeslaTweetsFinal.html)
+
+[Comacast Project (Python)](Group5_Phase4_FinalProject.html)
+
+[Hospital Stays Project (R)](Midterm.html)
